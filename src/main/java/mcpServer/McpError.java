@@ -1,3 +1,4 @@
+package mcpServer;
 public class McpError extends RuntimeException {
 
     private McpSchema.JSONRPCResponse.JSONRPCError jsonRpcError;

@@ -1,6 +1,8 @@
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import mcpServer.*;
+
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -18,7 +20,6 @@ import java.util.Map;
 
 public class MyMCPServer {
     private static final String NWS_API_BASE = "https://api.weather.gov";
-    private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final String serverPipelineTriggerTaskUrl = "http://localhost:8888/api/1/rest/slsched/feed/snaplogic/projects/Assets_Export20250501_203354/MCP_server%20Task";
     private static final String serverPipelineBearerToken = "DgRmatae0bB7NOudup7DSOXOPZfN0Jvn";
 
@@ -41,7 +42,7 @@ public class MyMCPServer {
         Server server = new Server(threadPool);
 
         ServerConnector connector = new ServerConnector(server);
-        connector.setPort(45450);
+        connector.setPort(45451);
         server.addConnector(connector);
 
         ServletContextHandler context = new ServletContextHandler();

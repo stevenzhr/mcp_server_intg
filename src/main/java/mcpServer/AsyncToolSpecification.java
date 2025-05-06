@@ -1,3 +1,4 @@
+package mcpServer;
 import java.util.Map;
 import java.util.function.BiFunction;
 

@@ -1,3 +1,4 @@
+package mcpServer;
 import com.fasterxml.jackson.core.type.TypeReference;
 import reactor.core.publisher.Mono;
 

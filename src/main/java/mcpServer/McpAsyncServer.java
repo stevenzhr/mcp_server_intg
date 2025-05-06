@@ -1,3 +1,4 @@
+package mcpServer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -37,7 +38,7 @@ public class McpAsyncServer {
     private McpSchema.LoggingLevel minLoggingLevel = McpSchema.LoggingLevel.DEBUG;
     private List<String> protocolVersions = List.of(McpSchema.LATEST_PROTOCOL_VERSION);
 
-    static Specification builder(HttpServletSseServerTransportProvider transportProvider) {
+    public static Specification builder(HttpServletSseServerTransportProvider transportProvider) {
         return new Specification(transportProvider);
     }
 
@@ -323,7 +324,7 @@ private String callSnaplogicPipeline(Object requestParams) throws IOException, I
     /**
      * Synchronous server specification.
      */
-    static class Specification {
+    public static class Specification {
 
         private static final McpSchema.Implementation DEFAULT_SERVER_INFO = new McpSchema.Implementation("mcp-server",
                 "1.0.0");
