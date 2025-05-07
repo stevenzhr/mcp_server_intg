@@ -16,7 +16,7 @@ public class McpAsyncServerExchange {
 
     private final McpSchema.Implementation clientInfo;
 
-    private static final TypeReference<McpSchema.ListRootsResult> LIST_ROOTS_RESULT_TYPE_REF = new TypeReference<>() {
+    private static final TypeReference<McpSchema.ListRootsResult> LIST_ROOTS_RESULT_TYPE_REF = new TypeReference<McpSchema.ListRootsResult>() {
     };
 
     /**

@@ -7,10 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.OutputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -177,28 +178,37 @@ public class McpAsyncServer {
  * @throws IOException If an I/O error occurs
  * @throws InterruptedException If the operation is interrupted
  */
-private String callSnaplogicPipeline(Object requestParams) throws IOException, InterruptedException {
-    final String url = "http://localhost:8888/api/1/rest/slsched/feed/snaplogic/projects/Assets_Export20250501_203354/MCP_server%20Task";
+private String callSnaplogicPipeline(Object requestParams) throws IOException {
+    final String urlStr = "http://localhost:8888/api/1/rest/slsched/feed/snaplogic/projects/Assets_Export20250501_203354/MCP_server%20Task";
     final String bearerToken = "DgRmatae0bB7NOudup7DSOXOPZfN0Jvn";
-
-    HttpRequest request = HttpRequest.newBuilder()
-        .uri(URI.create(url))
-        .header("User-Agent", "MCP Weather Demo (your-email@example.com)")
-        .header("Authorization", "Bearer " + bearerToken)
-        .header("Accept", "application/json")
-        .header("Content-Type", "application/json")
-        .POST(HttpRequest.BodyPublishers.ofString(
-            requestParams == null ? Map.of().toString() : objectMapper.writeValueAsString(requestParams)
-        ))
-        .build();
-
-    // Configure HttpClient to follow redirects
-    HttpClient clientWithRedirects = HttpClient.newBuilder()
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build();
-
-    HttpResponse<String> response = clientWithRedirects.send(request, HttpResponse.BodyHandlers.ofString());
-    return response.body();
+    
+    URL url = new URL(urlStr);
+    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    connection.setRequestMethod("POST");
+    connection.setRequestProperty("User-Agent", "MCP Weather Demo (your-email@example.com)");
+    connection.setRequestProperty("Authorization", "Bearer " + bearerToken);
+    connection.setRequestProperty("Accept", "application/json");
+    connection.setRequestProperty("Content-Type", "application/json");
+    connection.setInstanceFollowRedirects(true);
+    connection.setDoOutput(true);
+    
+    // Write request body
+    try (OutputStream os = connection.getOutputStream()) {
+        String requestBody = requestParams == null ? "{}" : objectMapper.writeValueAsString(requestParams);
+        byte[] input = requestBody.getBytes("utf-8");
+        os.write(input, 0, input.length);
+    }
+    
+    // Read response
+    StringBuilder response = new StringBuilder();
+    try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), "utf-8"))) {
+        String responseLine;
+        while ((responseLine = br.readLine()) != null) {
+            response.append(responseLine.trim());
+        }
+    }
+    
+    return response.toString();
 }
 
     private McpServerSession.RequestHandler<McpSchema.ListToolsResult> toolsListRequestHandler() {
@@ -222,7 +232,7 @@ private String callSnaplogicPipeline(Object requestParams) throws IOException, I
         return (exchange, params) -> {    
             try {
                 McpSchema.CallToolRequest callToolRequest = objectMapper.convertValue(params,
-                    new TypeReference<>() {});
+                    new TypeReference<McpSchema.CallToolRequest>() {});
                 Map<String, Object> requestParams = callToolRequest.arguments();
                 requestParams.put("sl_tool_name", callToolRequest.name());
                 
