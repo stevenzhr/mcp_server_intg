@@ -5,7 +5,7 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
 
-public class JettyServer {
+public class ExampleServer {
     public static void main(String[] args) {
         QueuedThreadPool threadPool = new QueuedThreadPool();
         threadPool.setName("server");
@@ -18,7 +18,10 @@ public class JettyServer {
 
         WebAppContext context = new WebAppContext();
         context.setContextPath("/");
-
+        
+        // Set a resource base - required for WebAppContext
+        context.setResourceBase(".");
+        
         context.addServlet(SseHandler.class, "/sse");
 
         server.setHandler(context);
