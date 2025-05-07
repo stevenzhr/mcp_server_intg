@@ -97,6 +97,22 @@ public class HttpServletSseServerTransportProvider extends HttpServlet {
     }
 
     /**
+     * Creates a new HttpServletSseServerTransportProvider instance with default values.
+     * Initializes with a new ObjectMapper, "/" as messageEndpoint, and "/sse" as sseEndpoint.
+     * This matches the configuration used in the example server.
+     */
+    public HttpServletSseServerTransportProvider() {
+        this(new ObjectMapper(), "/", "/sse");
+        McpAsyncServer syncServer = McpAsyncServer.builder(this)
+                .serverInfo("custom-server", "0.0.1")
+                .capabilities(McpSchema.ServerCapabilities.builder()
+                        .tools(true)
+                        .logging()
+                        .build())
+                .build();
+    }
+
+    /**
      * Sets the session factory for creating new sessions.
      * @param sessionFactory The session factory to use
      */

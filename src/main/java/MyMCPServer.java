@@ -10,16 +10,17 @@ import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 public class MyMCPServer {
     public static void main(String[] args) throws Exception {
-        HttpServletSseServerTransportProvider transportProvider =
-                new HttpServletSseServerTransportProvider(new ObjectMapper(), "/", "/sse");
+        // HttpServletSseServerTransportProvider transportProvider =
+        //         new HttpServletSseServerTransportProvider(new ObjectMapper(), "/", "/sse");
 
-        McpAsyncServer syncServer = McpAsyncServer.builder(transportProvider)
-                .serverInfo("custom-server", "0.0.1")
-                .capabilities(McpSchema.ServerCapabilities.builder()
-                        .tools(true)
-                        .logging()
-                        .build())
-                .build();
+        // McpAsyncServer syncServer = McpAsyncServer.builder(transportProvider)
+        //         .serverInfo("custom-server", "0.0.1")
+        //         .capabilities(McpSchema.ServerCapabilities.builder()
+        //                 .tools(true)
+        //                 .logging()
+        //                 .build())
+        //         .build();
+        HttpServletSseServerTransportProvider transportProvider = new HttpServletSseServerTransportProvider();
 
         QueuedThreadPool threadPool = new QueuedThreadPool();
         threadPool.setName("server");
