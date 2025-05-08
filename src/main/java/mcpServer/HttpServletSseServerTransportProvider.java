@@ -102,7 +102,7 @@ public class HttpServletSseServerTransportProvider extends HttpServlet {
      * This matches the configuration used in the example server.
      */
     public HttpServletSseServerTransportProvider() {
-        this(new ObjectMapper(), "/", "/sse");
+        this(new ObjectMapper(), "/mcp/messages", "/sse");
         McpAsyncServer syncServer = McpAsyncServer.builder(this)
                 .serverInfo("custom-server", "0.0.1")
                 .capabilities(McpSchema.ServerCapabilities.builder()
@@ -250,6 +250,10 @@ public class HttpServletSseServerTransportProvider extends HttpServlet {
             }
 
             McpSchema.JSONRPCMessage message = McpSchema.deserializeJsonRpcMessage(objectMapper, body.toString());
+
+            System.out.println("---------------------------");
+            System.out.println("Request body: " + body.toString());
+            System.out.println("---------------------------");
 
             // Process the message through the session's handle method
             session.handle(message).block(); // Block for Servlet compatibility
