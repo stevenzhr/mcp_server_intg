@@ -14,7 +14,7 @@ public class MyMCPServer {
         Server server = new Server(threadPool);
 
         ServerConnector connector = new ServerConnector(server);
-        connector.setPort(45451);
+        connector.setPort(45450);
         server.addConnector(connector);
 
         WebAppContext context = new WebAppContext();
