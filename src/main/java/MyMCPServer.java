@@ -1,11 +1,7 @@
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import mcpServer.*;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
 
@@ -26,10 +22,6 @@ public class MyMCPServer {
         context.setResourceBase(".");
 
         context.addServlet(HttpServletSseServerTransportProvider.class, "/mcp/*");
-
-        // ServletContextHandler context = new ServletContextHandler();
-        // context.setContextPath("/");
-        // context.addServlet(new ServletHolder(transportProvider), "/*");
 
         server.setHandler(context);
         server.start();
