@@ -25,6 +25,8 @@ public class McpServerSession {
 
     private final String id;
 
+    private String serverId;
+
     private final AtomicLong requestCounter = new AtomicLong(0);
 
     private final InitRequestHandler initRequestHandler;
@@ -68,6 +70,14 @@ public class McpServerSession {
      */
     public String getId() {
         return this.id;
+    }
+
+    public String getServerId() {
+        return this.serverId;
+    }
+
+    public void setServerId(String serverId) {
+        this.serverId = serverId;
     }
 
     /**

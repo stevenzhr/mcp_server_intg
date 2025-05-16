@@ -168,53 +168,60 @@ public class McpAsyncServer {
     }
 
     /**
- * Utility method to handle HTTP requests to Snaplogic pipelines.
- * This combines the common functionality from toolsListRequestHandler and toolsCallRequestHandler.
- * 
- * @param url The endpoint URL to call
- * @param bearerToken The authorization token
- * @param requestParams The parameters to send in the request body
- * @return The response body as a String
- * @throws IOException If an I/O error occurs
- * @throws InterruptedException If the operation is interrupted
- */
-private String callSnaplogicPipeline(Object requestParams) throws IOException {
-    final String urlStr = "http://localhost:8888/api/1/rest/slsched/feed/snaplogic/projects/Assets_Export20250501_203354/MCP_server%20Task";
-    final String bearerToken = "DgRmatae0bB7NOudup7DSOXOPZfN0Jvn";
-    
-    URL url = new URL(urlStr);
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-    connection.setRequestMethod("POST");
-    connection.setRequestProperty("User-Agent", "MCP Weather Demo (your-email@example.com)");
-    connection.setRequestProperty("Authorization", "Bearer " + bearerToken);
-    connection.setRequestProperty("Accept", "application/json");
-    connection.setRequestProperty("Content-Type", "application/json");
-    connection.setInstanceFollowRedirects(true);
-    connection.setDoOutput(true);
-    
-    // Write request body
-    try (OutputStream os = connection.getOutputStream()) {
-        String requestBody = requestParams == null ? "{}" : objectMapper.writeValueAsString(requestParams);
-        byte[] input = requestBody.getBytes("utf-8");
-        os.write(input, 0, input.length);
-    }
-    
-    // Read response
-    StringBuilder response = new StringBuilder();
-    try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), "utf-8"))) {
-        String responseLine;
-        while ((responseLine = br.readLine()) != null) {
-            response.append(responseLine.trim());
+     * Utility method to handle HTTP requests to Snaplogic pipelines.
+     * This combines the common functionality from toolsListRequestHandler and toolsCallRequestHandler.
+     * 
+     * @param url The endpoint URL to call
+     * @param bearerToken The authorization token
+     * @param requestParams The parameters to send in the request body
+     * @return The response body as a String
+     * @throws IOException If an I/O error occurs
+     * @throws InterruptedException If the operation is interrupted
+     */
+    private String callSnaplogicPipeline(String serverId, Object requestParams) throws IOException {
+        // load server pipeline configuration
+        Map<String, ServerPipeline> serverPipelines = loadServerPipelines();
+        ServerPipeline serverPipeline = serverPipelines.get(serverId);
+        if (serverPipeline == null) {
+            throw new IOException("Server pipeline not found for serverId: " + serverId);
         }
+        String urlStr = serverPipeline.getServerEndpoint();
+        String bearerToken = serverPipeline.getBearerToken();
+        
+        URL url = new URL(urlStr);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("User-Agent", "MCP Weather Demo (your-email@example.com)");
+        connection.setRequestProperty("Authorization", "Bearer " + bearerToken);
+        connection.setRequestProperty("Accept", "application/json");
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setInstanceFollowRedirects(true);
+        connection.setDoOutput(true);
+        
+        // Write request body
+        try (OutputStream os = connection.getOutputStream()) {
+            String requestBody = requestParams == null ? "{}" : objectMapper.writeValueAsString(requestParams);
+            byte[] input = requestBody.getBytes("utf-8");
+            os.write(input, 0, input.length);
+        }
+        
+        // Read response
+        StringBuilder response = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), "utf-8"))) {
+            String responseLine;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+        }
+        
+        return response.toString();
     }
-    
-    return response.toString();
-}
 
     private McpServerSession.RequestHandler<McpSchema.ListToolsResult> toolsListRequestHandler() {
         return (exchange, params) -> {
             try {
-                String responseBody = callSnaplogicPipeline(params);
+                String serverId = exchange.getSession().getServerId();
+                String responseBody = callSnaplogicPipeline(serverId, params);
                 JsonNode responseJson = objectMapper.readTree(responseBody);
                 System.out.println("Response from list tools pipeline: " + responseJson);
                 
@@ -236,7 +243,8 @@ private String callSnaplogicPipeline(Object requestParams) throws IOException {
                 Map<String, Object> requestParams = callToolRequest.arguments();
                 requestParams.put("sl_tool_name", callToolRequest.name());
                 
-                String responseBody = callSnaplogicPipeline(requestParams);
+                String serverId = exchange.getSession().getServerId();
+                String responseBody = callSnaplogicPipeline(serverId, requestParams);
                 
                 JsonNode responseJson = objectMapper.readTree(responseBody);
                 System.out.println("Response from server pipeline: " + responseJson);
@@ -378,6 +386,34 @@ private String callSnaplogicPipeline(Object requestParams) throws IOException {
         public McpAsyncServer build() {
             var mapper = this.objectMapper != null ? this.objectMapper : new ObjectMapper();
             return new McpAsyncServer(this.transportProvider, mapper, this.serverInfo, this.serverCapabilities, this.tools);
+        }
+    }
+
+    private Map<String, ServerPipeline> loadServerPipelines() {
+        // FIXME: dummy implementation
+        Map<String, ServerPipeline> serverPipelines = new HashMap<>();
+        serverPipelines.put("server1", new ServerPipeline("http://localhost:8888/api/1/rest/slsched/feed/snaplogic/projects/MCP_servers/MCP_server%20Task", "DgRmatae0bB7NOudup7DSOXOPZfN0Jvn"));
+        serverPipelines.put("server2", new ServerPipeline("http://localhost:8888/api/1/rest/slsched/feed/snaplogic/projects/MCP_servers/MCP_server2%20Task", "2BaolZlSVwrFeAJbl9uRolZXv4hj1TZw"));
+
+        return serverPipelines;
+    }
+
+    private class ServerPipeline {
+        private final String serverEndpoint;
+        private String bearerToken;
+
+        public ServerPipeline(String serverEndpoint, String bearerToken) {
+            this.serverEndpoint = serverEndpoint;
+            this.bearerToken = bearerToken;
+        }
+        public String getServerEndpoint() {
+            return serverEndpoint;
+        }
+        public String getBearerToken() {
+            return bearerToken;
+        }
+        public void setBearerToken(String bearerToken) {
+            this.bearerToken = bearerToken;
         }
     }
 }

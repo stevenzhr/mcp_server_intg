@@ -50,4 +50,8 @@ public class McpAsyncServerExchange {
         return this.session.sendRequest(McpSchema.METHOD_ROOTS_LIST, new McpSchema.PaginatedRequest(cursor),
                 LIST_ROOTS_RESULT_TYPE_REF);
     }
+
+    public McpServerSession getSession() {
+        return session;
+    }
 }

@@ -161,6 +161,9 @@ public class HttpServletSseServerTransportProvider extends HttpServlet {
             return;
         }
 
+        // Extract the server ID from the request URI
+        String serverId = requestURI.split("/")[2];
+
         if (isClosing.get()) {
             response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Server is shutting down");
             return;
@@ -183,6 +186,7 @@ public class HttpServletSseServerTransportProvider extends HttpServlet {
 
         // Create a new session using the session factory
         McpServerSession session = sessionFactory.create(sessionTransport);
+        session.setServerId(serverId);
         this.sessions.put(sessionId, session);
 
         // Send initial endpoint event
